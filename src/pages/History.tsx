@@ -20,7 +20,7 @@ export function History() {
               <td>25 minutos</td>
               <td>Há cerca de 2 meses</td>
               <td>
-                <span className="status done">Concluído</span>
+                <Status progress="done">Concluído</Status>
               </td>
             </tr>
           </tbody>
@@ -42,6 +42,32 @@ const HistoryContainer = styled.main`
     color: ${(props) => props.theme.colors["gray-100"]};
   }
 `;
+
+const STATUS_PROGRESS = {
+  done: "green-500",
+  inProgress: "yellow-500",
+  interrupted: "red-500",
+} as const;
+
+interface StatusProps {
+  progress: keyof typeof STATUS_PROGRESS;
+}
+
+export const Status = styled.span<StatusProps>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &::before {
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background-color: ${(props) =>
+      props.theme.colors[STATUS_PROGRESS[props.progress]]};
+  }
+`;
+
 const HistoryList = styled.div`
   flex: 1;
   overflow: auto;
