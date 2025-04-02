@@ -1,4 +1,4 @@
-import { Play } from "phosphor-react";
+import { HandPalm, Play } from "phosphor-react";
 import styled from "styled-components";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,7 +10,7 @@ const newCycleFormSchema = z.object({
   task: z.string().min(1, "Informe o nome do projeto"),
   minutesAmount: z
     .number()
-    .min(5, "O ciclo precisa ser de no mínimo 5 minutos")
+    .min(1, "O ciclo precisa ser de no mínimo 5 minutos")
     .max(60, "O ciclo precisa ser de no máximo 60 minutos"),
 });
 
@@ -21,6 +21,8 @@ interface CycleProps {
   task: string;
   minutesAmount: number;
   startDate: Date;
+  interruptedDate?: Date;
+  finishedDate?: Date;
 }
 export function Home() {
   const [cycles, setCycles] = useState<CycleProps[]>([]);
@@ -39,11 +41,27 @@ export function Home() {
 
   useEffect(() => {
     let interval: number;
+
     if (activeCycle) {
       interval = setInterval(() => {
-        setAmountSecondsPassed(
-          differenceInSeconds(new Date(), activeCycle.startDate),
+        const secondsDifference = differenceInSeconds(
+          new Date(),
+          activeCycle.startDate,
         );
+
+        if (secondsDifference >= activeCycle.minutesAmount * 60) {
+          setCycles((prev) =>
+            prev.map((cycle) =>
+              cycle.id === activeCycleId
+                ? { ...cycle, finishedDate: new Date() }
+                : cycle,
+            ),
+          );
+          setActiveCycleId(null);
+          clearInterval(interval);
+        } else {
+          setAmountSecondsPassed(secondsDifference);
+        }
       }, 1000);
     }
     return () => {
@@ -62,6 +80,17 @@ export function Home() {
     setActiveCycleId(newCycle.id);
     setAmountSecondsPassed(0);
     reset();
+  };
+
+  const handleInterruptCycle = () => {
+    setCycles((prev) =>
+      prev.map((cycle) =>
+        cycle.id === activeCycleId
+          ? { ...cycle, interruptedDate: new Date() }
+          : cycle,
+      ),
+    );
+    setActiveCycleId(null);
   };
 
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0;
@@ -93,6 +122,7 @@ export function Home() {
             type="text"
             placeholder="De um nome para o seu projeto"
             list="task-suggetions"
+            disabled={!!activeCycle}
             {...register("task")}
           />
           <datalist id="task-suggetions">
@@ -108,8 +138,9 @@ export function Home() {
             type="number"
             placeholder="00"
             step={5}
-            min={5}
+            min={1}
             max={60}
+            disabled={!!activeCycle}
             {...register("minutesAmount", { valueAsNumber: true })}
           />
           <span>minutos.</span>
@@ -121,10 +152,17 @@ export function Home() {
           <span>{seconds[0]}</span>
           <span>{seconds[1]}</span>
         </CountdownContainer>
-        <StartCountdownButton type="submit" disabled={isSubmitDisabled}>
-          <Play size={24} />
-          Começar
-        </StartCountdownButton>
+        {activeCycle ? (
+          <StopCountdownButton type="button" onClick={handleInterruptCycle}>
+            <HandPalm size={24} />
+            Interromper
+          </StopCountdownButton>
+        ) : (
+          <StartCountdownButton type="submit" disabled={isSubmitDisabled}>
+            <Play size={24} />
+            Começar
+          </StartCountdownButton>
+        )}
       </form>
     </HomeContainer>
   );
@@ -178,10 +216,9 @@ const Separator = styled.div`
   justify-content: center;
 `;
 
-const StartCountdownButton = styled.button`
+const BaseCountdownButton = styled.button`
   width: 100%;
   padding: 1rem;
-  background-color: ${(props) => props.theme.colors["green-500"]};
   border-radius: 8px;
   border: none;
   color: ${(props) => props.theme.colors["gray-100"]};
@@ -232,5 +269,19 @@ const MinutesAmountInput = styled(BaseInput)`
   width: 4rem;
   &::placeholder {
     color: ${(props) => props.theme.colors["gray-500"]};
+  }
+`;
+
+const StartCountdownButton = styled(BaseCountdownButton)`
+  background-color: ${(props) => props.theme.colors["green-500"]};
+  &:not(:disabled):hover {
+    background-color: ${(props) => props.theme.colors["green-700"]};
+  }
+`;
+
+const StopCountdownButton = styled(BaseCountdownButton)`
+  background-color: ${(props) => props.theme.colors["red-500"]};
+  &:not(:disabled):hover {
+    background-color: ${(props) => props.theme.colors["red-700"]};
   }
 `;
