@@ -32,7 +32,6 @@ export function Countdown() {
 
         if (secondsDifference >= activeCycle.minutesAmount * 60) {
           handleFinishCycle();
-          // setActiveCycleId(null);
           clearInterval(interval);
         } else {
           handleSetAmountSecondsPassed(secondsDifference);

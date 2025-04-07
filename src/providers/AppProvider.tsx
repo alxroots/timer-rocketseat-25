@@ -17,6 +17,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           : cycle,
       ),
     );
+    setActiveCycleId(null);
   };
   const handleSetCycles = (newCycle: CycleProps) => {
     setCycles((prev) => [...prev, newCycle]);
@@ -42,6 +43,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   return (
     <AppContext.Provider
       value={{
+        cycles,
         activeCycle,
         amountSecondsPassed,
         handleFinishCycle,

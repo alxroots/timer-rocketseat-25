@@ -8,6 +8,7 @@ export interface CycleProps {
 }
 
 interface AppContextProps {
+  cycles: CycleProps[];
   activeCycle?: CycleProps;
   amountSecondsPassed: number;
   handleFinishCycle(): void;
