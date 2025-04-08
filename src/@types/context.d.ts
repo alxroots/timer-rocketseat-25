@@ -7,6 +7,11 @@ export interface CycleProps {
   finishedDate?: Date;
 }
 
+export interface CycleStateProps {
+  cycles: CycleProps[];
+  activeCycleId: string | null;
+}
+
 interface AppContextProps {
   cycles: CycleProps[];
   activeCycle?: CycleProps;
