@@ -21,7 +21,3 @@ interface AppContextProps {
   handleSetCycles(newCycle: CycleProps): void;
   handleInterruptCycle(): void;
 }
-
-interface AppProviderProps {
-  children: React.ReactNode;
-}

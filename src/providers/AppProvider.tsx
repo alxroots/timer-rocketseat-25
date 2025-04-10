@@ -1,52 +1,16 @@
-import { useReducer, useState } from "react";
-import {
-  AppProviderProps,
-  CycleProps,
-  CycleStateProps,
-} from "../@types/context";
+import { ReactNode, useReducer, useState } from "react";
+import { CycleProps } from "../@types/context";
 import { AppContext } from "./useContext";
+import { ActionTypes, cyclesReducers } from "../reducers/cycles";
 
+interface AppProviderProps {
+  children: ReactNode;
+}
 export const AppProvider = ({ children }: AppProviderProps) => {
-  const [cyclesState, dispatch] = useReducer(
-    (state: CycleStateProps, action) => {
-      switch (action.type) {
-        case "ADD_CYCLE":
-          return {
-            ...state,
-            cycles: [...state.cycles, action.payload],
-            activeCycleId: action.payload.id,
-          };
-        case "INTERRUPT_CYCLE":
-          return {
-            ...state,
-            cycles: state.cycles.map((cycle) => {
-              if (cycle.id === state.activeCycleId) {
-                return { ...cycle, interruptedDate: new Date() };
-              }
-              return cycle;
-            }),
-            activeCycleId: null,
-          };
-        case "FINISH_CYCLE":
-          return {
-            ...state,
-            cycles: state.cycles.map((cycle) => {
-              if (cycle.id === action.payload) {
-                return { ...cycle, finishedDate: new Date() };
-              }
-              return cycle;
-            }),
-            activeCycleId: null,
-          };
-        default:
-          return state;
-      }
-    },
-    {
-      cycles: [],
-      activeCycleId: null,
-    },
-  );
+  const [cyclesState, dispatch] = useReducer(cyclesReducers, {
+    cycles: [],
+    activeCycleId: null,
+  });
 
   const { cycles, activeCycleId } = cyclesState;
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0);
@@ -55,14 +19,13 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   const handleFinishCycle = () => {
     dispatch({
-      type: "FINISH_CYCLE",
-      payload: activeCycleId,
+      type: ActionTypes.FINISH_CYCLE,
     });
   };
   const handleSetCycles = (newCycle: CycleProps) => {
     dispatch({
-      type: "ADD_CYCLE",
-      payload: newCycle,
+      type: ActionTypes.ADD_CYCLE,
+      payload: { newCycle },
     });
 
     setAmountSecondsPassed(0);
@@ -70,8 +33,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   const handleInterruptCycle = () => {
     dispatch({
-      type: "INTERRUPT_CYCLE",
-      payload: activeCycleId,
+      type: ActionTypes.INTERRUPT_CYCLE,
     });
   };
 
